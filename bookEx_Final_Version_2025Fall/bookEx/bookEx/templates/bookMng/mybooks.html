@@ -1,31 +1,75 @@
 {% extends "base.html" %}
-{% block sidenav %}
-   {% for item in item_list %}
-      <li><a href="{{ item.link }}">{{ item.item }}</a></li>
-   {% endfor %}
-{% endblock sidenav %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mybooks.css' %}">
+{% endblock %}
 
 {% block content %}
-  <h1>My Purchased Books</h1>
+<div class="mylibrary-page">
+<div id="library-container">
 
-  {% if books %}
-  <table border="2">
-    <tr>
-      <th>Book Name</th>
-      <th>Price</th>
-    </tr>
-    {% for book in books %}
-    <tr>
-      <td>
-        <!-- If namespaced: bookMng:book_detail ; otherwise: book_detail -->
-        <a href="{% url 'bookMng:book_detail' book.id %}">{{ book.name }}</a>
-      </td>
-      <td>{{ book.price }}</td>
-    </tr>
-    {% endfor %}
-  </table>
-  {% else %}
-    <p>You haven't purchased any books yet.</p>
-    <a class="btn btn-primary" href="{% url 'bookMng:displaybooks' %}">Browse Books</a>
-  {% endif %}
+    <div id="library-left">
+        <h2>My Library</h2>
+        <div class="book-grid">
+            {% for bk in books %}
+            <div class="book-card" onclick="showDetails({{ bk.id }})">
+                {% if bk.picture %}
+                    <img src="{{ bk.picture.url }}" class="book-cover">
+                {% else %}
+                    <img src="{% static 'img/placeholder_book.png' %}" class="book-cover">
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="details-panel" class="hidden">
+        <button onclick="hideDetails()" class="close-btn">✖</button>
+        <div id="details-content">Select a book...</div>
+    </div>
+
+</div>
+</div>
+
+<script>
+function showDetails(id) {
+    fetch(`/book-info/${id}/`)
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("details-panel").classList.remove("hidden");
+
+            document.getElementById("details-content").innerHTML = `
+                <img src="${data.picture}" style="width:250px;height:350px;object-fit:cover;border-radius:8px;"><br><br>
+                <h2>${data.name}</h2>
+                <p><strong>Author:</strong> ${data.author}</p>
+                <p><strong>Summary:</strong> ${data.summary}</p>
+                <p><strong>Price:</strong> $${data.price}</p>
+
+                ${data.can_delete ? `
+                    <button onclick="removeOwnership(${data.id})" class="btn btn-danger mt-3">Remove From My Library</button>
+                ` : ""}
+            `;
+        });
+}
+
+function removeOwnership(id) {
+    if (!confirm("Remove this book from your library?")) return;
+
+    fetch(`/remove-book/${id}/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(res => res.json())
+    .then(() => {
+        alert("✅ Book removed from your library.");
+        location.reload();
+    });
+}
+</script>
+
+
+
 {% endblock %}
