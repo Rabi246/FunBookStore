@@ -11,6 +11,12 @@ from django.views.generic.edit import CreateView
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
 from .models import PurchasedBook,Book
+from .models import Book, Comment, MainMenu
+from django.shortcuts import render, get_object_or_404, redirect
+from .forms import CommentForm
+
+
+
 
 
 
@@ -63,15 +69,32 @@ def displaybooks(request):
 
 
 def book_detail(request, book_id):
-    book = Book.objects.get(id=book_id)
+    # get the book object
+    book = get_object_or_404(Book, id=book_id)
+    book.pic_path = book.picture.url[14:] if book.picture else ''
 
-    book.pic_path = book.picture.url[14:]
-    return render(request,
-                  'bookMng/book_detail.html',
-                  {
-                      'item_list': MainMenu.objects.all(),
-                      'book': book
-                  })
+    # get all comments for this book
+    comments = book.comments.all().order_by('-created_at')
+
+    # handle comment submission
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.user = request.user
+            comment.book = book
+            comment.save()
+            return redirect('bookMng:book_detail', book_id=book.id)
+    else:
+        form = CommentForm()
+
+    # render the template
+    return render(request, 'bookMng/book_detail.html', {
+        'item_list': MainMenu.objects.all(),
+        'book': book,
+        'comments': comments,
+        'form': form,
+    })
 
 
 class Register(CreateView):

@@ -1,57 +1,63 @@
-
 {% extends "base.html" %}
 {% load static %}
 
-{% block sidenav %}
-   {% for item in item_list %}
-      <li>
-        <a href="{{ item.link }}">  {{ item.item }} </a>
-      </li>
-   {% endfor %}
-{% endblock sidenav %}
-
 {% block content %}
-   <h1>Book Detail</h1>
-   <table border="2" >
-      <tr>
-          <th>
-              Book Picture
-          </th>
-          <th>
-              Book Name
-          </th>
-          <th>
-              Book Price
-          </th>
-          <th>
-              User Name
-          </th>
-          <th>
-              Book Post Date
-          </th>
-          <th>
-              Book Web
-          </th>
-      </tr>
-       <tr>
-           <td>
-           <img src="{% static book.pic_path %}" width="100" />
-         </td>
-         <td>
-            {{ book.name }}
-         </td>
-         <td>
-            {{ book.price }}
-         </td>
-          <td>
-            {{ book.username }}
-         </td>
-           <td>
-            {{ book.publishdate }}
-         </td>
-           <td>
-               {{ book.web }}
-           </td>
-      </tr>
-   </table>
-{% endblock content %}
+<div class="container py-5" style="max-width: 1100px;">
+
+  <!-- 📚 Book + Comments Row -->
+  <div class="row g-4 align-items-start">
+
+    <!-- Left: Book Info (1/3 width) -->
+    <div class="col-10">
+      <div class="card shadow-sm border-0 p-4 h-100">
+        <div class="text-center mb-3">
+          <img src="{% static book.pic_path %}" alt="{{ book.name }}" class="img-fluid rounded shadow-sm" style="max-height: 220px; object-fit: cover;">
+        </div>
+        <h2 class="fw-bold mb-2 text-center">{{ book.name }}</h2>
+        <p class="fs-5 text-muted text-center mb-3">${{ book.price }}</p>
+        <p><strong>Posted by:</strong> {{ book.username|default:"Anonymous" }}</p>
+        <p><strong>Date Posted:</strong> {{ book.publishdate }}</p>
+        <div class="text-center mt-3">
+          <a href="{{ book.web }}" target="_blank" class="btn btn-outline-primary btn-sm px-3">View on Web</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Comments (2/3 width) -->
+    <div class="col-7">
+      <div class="card border-0 shadow-sm p-4">
+        <h4 class="fw-semibold mb-4">Comments ({{ comments.count }})</h4>
+
+        {% if user.is_authenticated %}
+          <form method="POST" class="mb-4">
+            {% csrf_token %}
+            <div class="mb-3">
+              <textarea name="text" class="form-control" rows="3" placeholder="Write your comment..."></textarea>
+            </div>
+            <button class="btn btn-primary w-100" type="submit">Add Comment</button>
+          </form>
+        {% else %}
+          <p><a href="{% url 'login' %}">Login</a> to leave a comment.</p>
+        {% endif %}
+
+        <hr>
+
+        {% for comment in comments %}
+          <div class="card mb-3 border-0 shadow-sm">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <strong>{{ comment.user.username }}</strong>
+                <small class="text-muted">{{ comment.created_at|date:"M d, Y H:i" }}</small>
+              </div>
+              <p class="mb-0 text-secondary">{{ comment.text }}</p>
+            </div>
+          </div>
+        {% empty %}
+          <p class="text-muted">No comments yet. Be the first to comment!</p>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
