@@ -5,6 +5,8 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 
+from django.db.models import Avg
+
 # Create your models here.
 class MainMenu(models.Model):
     item = models.CharField(max_length=300, unique=True)
@@ -71,6 +73,19 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"{self.user} on {self.book}"
+
+class Rating(models.Model):
+    book = models.ForeignKey('Book', related_name='ratings', on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='book_ratings', on_delete=models.CASCADE)
+    value = models.PositiveSmallIntegerField(choices=[(i, i) for i in range(1, 6)])
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('book', 'user')  # one rating per user per book
+
+    def __str__(self):
+        return f'{self.user} → {self.book} [{self.value}]'
 
 
 

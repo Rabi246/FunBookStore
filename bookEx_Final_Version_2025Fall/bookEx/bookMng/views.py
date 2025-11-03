@@ -16,6 +16,9 @@ from .models import PurchasedBook,Book
 from .models import Book, Comment, MainMenu
 from django.shortcuts import render, get_object_or_404, redirect
 from .forms import CommentForm
+from .models import Book, Rating
+from django.contrib import messages
+from django.http import JsonResponse
 
 
 
@@ -200,3 +203,32 @@ def search_books(request):
         "results": results,
         "item_list": MainMenu.objects.all()
     })
+
+def rate_book(request, book_id):
+    """Create or update the user's rating for a specific book."""
+    book = get_object_or_404(Book, id=book_id)
+
+    # Validate rating value
+    try:
+        value = int(request.POST.get('value', ''))
+        if value < 1 or value > 5:
+            raise ValueError()
+    except ValueError:
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'ok': False, 'error': 'Rating must be between 1 and 5.'}, status=400)
+        messages.error(request, 'Please choose a rating from 1 to 5.')
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+
+    # Create or update rating
+    Rating.objects.update_or_create(
+        book=book,
+        user=request.user,
+        defaults={'value': value}
+    )
+
+    # Respond simply
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({'ok': True, 'value': value})
+
+    messages.success(request, f'Your rating ({value}★) has been saved!')
+    return redirect(request.META.get('HTTP_REFERER', '/'))

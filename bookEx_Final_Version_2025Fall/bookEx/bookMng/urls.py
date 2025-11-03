@@ -19,6 +19,7 @@ urlpatterns = [
     path("book-info/<int:book_id>/", views.book_info, name="book_info"),
     path("remove-book/<int:book_id>/", views.remove_ownership, name="remove_ownership"),
     path("search/", views.search_books, name="search_books"),
+    path('books/<int:book_id>/rate/', views.rate_book, name='rate_book'),
 
 
 

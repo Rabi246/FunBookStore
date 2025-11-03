@@ -20,6 +20,7 @@
                     <img src="{% static 'img/placeholder_book.png' %}" class="book-cover">
                 {% endif %}
             </div>
+
             {% endfor %}
         </div>
     </div>
@@ -45,6 +46,16 @@ function showDetails(id) {
                 <p><strong>Author:</strong> ${data.author}</p>
                 <p><strong>Summary:</strong> ${data.summary}</p>
                 <p><strong>Price:</strong> $${data.price}</p>
+                <div class="rating" data-book="${data.id}">
+                    <div style="margin-top:8px;margin-bottom:4px;">
+                        <strong>Your rating:</strong>
+                        <span class="stars" aria-label="Rate this book">
+                            ${[1,2,3,4,5].map(i => `
+                                <button type="button" class="star" data-value="${i}">★</button>
+                            `).join('')}
+                        </span>
+                    </div>
+                </div>
 
                 ${data.can_delete ? `
                     <button onclick="removeOwnership(${data.id})" class="btn btn-danger mt-3">Remove From My Library</button>
@@ -69,6 +80,55 @@ function removeOwnership(id) {
     });
 }
 </script>
+<script>
+function getCSRFToken() {
+  const el = document.querySelector('#csrf-form [name=csrfmiddlewaretoken]');
+  return el ? el.value : '';
+}
+
+function wireRatingHandlers() {
+  document.querySelectorAll('.rating .star').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const value = btn.dataset.value;
+      const wrap = btn.closest('.rating');
+      const bookId = wrap.dataset.book;
+
+      fetch(`/books/${bookId}/rate/`, {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': getCSRFToken(),
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `value=${encodeURIComponent(value)}`
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (!data.ok) { alert(data.error || 'Something went wrong'); return; }
+        // Highlight selected stars
+        wrap.querySelectorAll('.star').forEach(s => {
+          if (Number(s.dataset.value) <= Number(value)) s.setAttribute('data-selected', '1');
+          else s.removeAttribute('data-selected');
+        });
+      })
+      .catch(() => alert('Network error'));
+    });
+  });
+}
+</script>
+
+<style>
+.rating .star {
+  border: 0;
+  background: transparent;
+  font-size: 1.5rem;
+  cursor: pointer;
+  opacity: 0.5;
+  line-height: 1;
+}
+.rating .star[data-selected="1"] { opacity: 1; }
+.rating .star:hover { opacity: 0.85; }
+</style>
 
 
 
