@@ -1,106 +1,34 @@
 {% extends "base.html" %}
 {% load static %}
-{% load form_tags %}
 
-
+{% block body_class %}auth-body{% endblock %}
 {% block extra_css %}
-<style>
-.auth-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background: #f7f8fa;
-}
-.auth-card {
-    background: white;
-    padding: 35px 40px;
-    width: 380px;
-    border-radius: 10px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-    text-align: center;
-}
-.auth-card h2 {
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-.auth-card p {
-    margin-top: 5px;
-    color: #666;
-}
-.auth-field {
-    text-align: left;
-    margin-top: 15px;
-}
-.auth-field label {
-    font-size: 14px;
-    font-weight: 500;
-}
-.auth-input {
-    width: 100%;
-    padding: 10px;
-    margin-top: 5px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-}
-.auth-input:focus {
-    border-color: #1463FF;
-    outline: none;
-}
-.btn-primary-custom {
-    width: 100%;
-    padding: 12px;
-    background: #1463FF;
-    color: white;
-    font-size: 16px;
-    border-radius: 6px;
-    border: none;
-    margin-top: 20px;
-}
-.btn-primary-custom:hover {
-    background: #004de6;
-}
-.auth-footer {
-    margin-top: 10px;
-    font-size: 14px;
-}
-.auth-footer a {
-    color: #1463FF;
-    font-weight: 500;
-}
-.icon-book {
-    font-size: 40px;
-    margin-bottom: 8px;
-}
-</style>
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="auth-wrapper">
-    <div class="auth-card">
+<div class="auth-container">
+  <div class="auth-card">
 
-        <div class="icon-book">📚</div>
-        <h2>BookWise</h2>
-        <h3>Create Account</h3>
+    <div class="auth-logo">🔖</div>
+    <h2>BookWise</h2>
+    <h3>Create Account</h3>
 
-        <form method="post">
-            {% csrf_token %}
-            {% for field in form %}
-            <div class="auth-field">
-                <label>{{ field.label }}</label>
-                {{ field|add_class:"auth-input" }}
-                {{ field.errors }}
+    <form method="post">
+      {% csrf_token %}
 
-            </div>
-            {% endfor %}
+      {% for field in form %}
+        <label>{{ field.label }}</label>
+        {{ field }}
+        {{ field.errors }}
+      {% endfor %}
 
-            <button type="submit" class="btn-primary-custom">Create Account</button>
-        </form>
+      <button type="submit" class="auth-btn">Create Account</button>
+    </form>
 
-        <div class="auth-footer">
-            Already have an account?
-            <a href="{% url 'login' %}">Sign in</a>
-        </div>
-    </div>
+    <p class="auth-switch">
+      Already registered? <a href="/login/">Sign in</a>
+    </p>
+  </div>
 </div>
 {% endblock %}

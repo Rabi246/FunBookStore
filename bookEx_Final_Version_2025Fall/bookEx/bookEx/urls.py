@@ -34,7 +34,7 @@ urlpatterns = [
     path('', include('bookMng.urls')),
     path('register/success', TemplateView.as_view(template_name="registration/register_success.html"),
          name='register-success'),
-    path('register', Register.as_view(), name='register'),
+    path('register/', Register.as_view(), name='register'),
     path('', include('django.contrib.auth.urls')),
     path("", include(("bookMng.urls", "bookMng"), namespace="bookMng")),
     path("aboutus/", views.about, name="about"),
