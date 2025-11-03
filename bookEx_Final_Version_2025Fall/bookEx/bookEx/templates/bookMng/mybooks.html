@@ -38,20 +38,38 @@ function showDetails(id) {
         .then(res => res.json())
         .then(data => {
             document.getElementById("details-panel").classList.remove("hidden");
+
             document.getElementById("details-content").innerHTML = `
                 <img src="${data.picture}" style="width:250px;height:350px;object-fit:cover;border-radius:8px;"><br><br>
                 <h2>${data.name}</h2>
                 <p><strong>Author:</strong> ${data.author}</p>
                 <p><strong>Summary:</strong> ${data.summary}</p>
                 <p><strong>Price:</strong> $${data.price}</p>
-                <p><strong>Added By:</strong> ${data.username}</p>
+
+                ${data.can_delete ? `
+                    <button onclick="removeOwnership(${data.id})" class="btn btn-danger mt-3">Remove From My Library</button>
+                ` : ""}
             `;
         });
 }
 
-function hideDetails() {
-    document.getElementById("details-panel").classList.add("hidden");
+function removeOwnership(id) {
+    if (!confirm("Remove this book from your library?")) return;
+
+    fetch(`/remove-book/${id}/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(res => res.json())
+    .then(() => {
+        alert("✅ Book removed from your library.");
+        location.reload();
+    });
 }
 </script>
+
+
 
 {% endblock %}

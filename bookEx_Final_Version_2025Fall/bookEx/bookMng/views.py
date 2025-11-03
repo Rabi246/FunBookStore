@@ -1,5 +1,7 @@
-from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
+from django.views.decorators.http import require_POST
 
 from .models import MainMenu
 from .forms import BookForm
@@ -118,11 +120,31 @@ from django.http import JsonResponse
 
 def book_info(request, book_id):
     book = Book.objects.get(id=book_id)
+
+    # ✅ Check if user owns the book (purchased)
+    user_owns_book = PurchasedBook.objects.filter(
+        user=request.user,
+        book=book
+    ).exists()
+
     return JsonResponse({
+        "id": book.id,
         "name": book.name,
         "author": book.author,
         "price": str(book.price),
         "summary": book.summary,
         "username": str(book.username),
-        "picture": book.picture.url if book.picture else "/static/img/placeholder_book.png"
+        "picture": book.picture.url if book.picture else "/static/img/placeholder_book.png",
+
+        # ✅ Only allow delete if the user purchased it
+        "can_delete": request.user.is_authenticated and user_owns_book
     })
+
+
+@require_POST
+@login_required
+def remove_ownership(request, book_id):
+    # ✅ Remove the book only from user's library (PurchasedBook table)
+    PurchasedBook.objects.filter(user=request.user, book_id=book_id).delete()
+
+    return JsonResponse({"success": True})
