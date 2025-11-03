@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 
 from .models import MainMenu
-from .forms import BookForm
+from .forms import BookForm, RegisterForm
 from django.http import HttpResponseRedirect
 
 from .models import Book
