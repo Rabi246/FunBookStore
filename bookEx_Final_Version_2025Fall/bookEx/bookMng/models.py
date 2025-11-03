@@ -14,14 +14,22 @@ class MainMenu(models.Model):
         return self.item
 
 
+from django.db import models
+from django.contrib.auth.models import User
+
 class Book(models.Model):
     name = models.CharField(max_length=200)
-    web = models.URLField(max_length=300)
-    price = models.DecimalField(decimal_places=2, max_digits=8)
-    publishdate = models.DateField(auto_now=True)
-    picture = models.FileField(upload_to='uploads/')
-    pic_path = models.CharField(max_length=300, editable=False, blank=True)
-    username = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
+    author = models.CharField(max_length=200)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+    summary = models.TextField()
+    picture = models.FileField(upload_to='uploads/', blank=True, null=True)
+
+
+    username = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    publishdate = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
 
 
 

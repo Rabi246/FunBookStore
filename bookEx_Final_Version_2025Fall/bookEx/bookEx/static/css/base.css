@@ -1,0 +1,129 @@
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+html, body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* Body */
+body {
+    flex: 1;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background-color: #f7f8fa;
+    color: #333;
+}
+
+
+/* Navbar */
+.navbar-brand {
+    font-size: 1.35rem;
+    font-weight: bold;
+    color: #222 !important;
+}
+
+/* Navbar links */
+.nav-link {
+    font-size: 1rem;
+    padding: 0.55rem 1rem;
+    color: #333 !important;
+}
+
+.nav-link:hover {
+    text-decoration: underline;
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+    border-radius: 8px;
+    padding: 0.5rem;
+}
+
+/* Page content wrapper */
+.container {
+    max-width: 1200px;
+}
+main {
+    flex: 1; /* pushes footer to bottom */
+}
+
+
+/* Buttons */
+.btn {
+    border-radius: 6px !important;
+}
+
+/* Footer */
+footer {
+    background: white;   /* keep black */
+    color: black !important; /* make text white */
+    text-align: center;
+    padding: 10px 0;
+}
+/* tighter list look */
+.list-group-item {
+  padding: 14px 16px;
+}
+.card-header h4 {
+  font-weight: 700;
+}
+
+#library-wrapper {
+    display: flex;
+    gap: 20px;
+}
+
+#book-list {
+    width: 30%;
+}
+
+.mylibrary-pag .book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 120px);
+    gap: 15px;
+}
+
+.mylibrary-pag .book-card {
+    border-radius: 8px;
+    cursor: pointer;
+    overflow: hidden;
+    border: 2px solid transparent;
+    transition: 0.2s;
+}
+
+.mylibrary-pag .book-card:hover {
+    border-color: #4a90e2;
+}
+
+.mylibrary-pag .book-cover {
+    width: 120px;
+    height: 160px;
+    object-fit: cover;
+}
+
+/* DETAILS PANEL */
+.mylibrary-pag #details-panel {
+    width: 65%;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    display: block;
+}
+
+.hidden { display: none; }
+
+.close-btn {
+    border: none;
+    background: transparent;
+    font-size: 20px;
+    float: right;
+    cursor: pointer;
+}
+
+

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+  <h2>My Purchases</h2>
+  {% if books %}
+    <div class="row g-3">
+      {% for b in books %}
+      <div class="col-md-4">
+        <div class="card h-100">
+          {% if b.cover_url %}
+          <img src="{{ b.cover_url }}" class="card-img-top" alt="{{ b.title }}">
+          {% endif %}
+          <div class="card-body">
+            <h5 class="card-title">{{ b.title }}</h5>
+            {% if b.author %}<p class="text-muted">{{ b.author }}</p>{% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>You haven’t purchased any books yet.</p>
+    <a href="/" class="btn btn-primary">Browse Books</a>
+  {% endif %}
+</div>
+{% endblock %}

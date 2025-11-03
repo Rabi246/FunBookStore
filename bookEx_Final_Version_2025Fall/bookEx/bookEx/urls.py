@@ -23,13 +23,21 @@ from django.urls import include
 from django.views.generic.base import TemplateView
 from bookMng.views import Register
 
+from bookMng import views
+
+from bookMng.views import home_redirect
+
+
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path('',home_redirect,name="home"),
     path('', include('bookMng.urls')),
     path('register/success', TemplateView.as_view(template_name="registration/register_success.html"),
          name='register-success'),
     path('register', Register.as_view(), name='register'),
     path('', include('django.contrib.auth.urls')),
     path("", include(("bookMng.urls", "bookMng"), namespace="bookMng")),
+    path("aboutus/", views.about, name="about"),
+
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

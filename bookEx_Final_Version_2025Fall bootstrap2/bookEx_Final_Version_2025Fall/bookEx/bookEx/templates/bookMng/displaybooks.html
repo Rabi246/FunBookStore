@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block sidenav %}
+   {% for item in item_list %}
+      <li>
+        <a href="{{ item.link }}">  {{ item.item }} </a>
+      </li>
+   {% endfor %}
+{% endblock sidenav %}
+
+{% block content %}
+   <h1>Recommendations</h1>
+   <table border="2">
+       <tr>
+          <th>Book Name</th>
+          <th>Book Price</th>
+          <th>User Name</th>
+          <th>Add to Cart</th> <!-- ✅ Added column header -->
+      </tr>
+
+   {% for book in books %}
+      <tr>
+         <td>
+            <a href="book_detail/{{ book.id }}">{{ book.name }}</a>
+         </td>
+         <td>{{ book.price }}</td>
+         <td>{{ book.username }}</td>
+         <td>
+             {% if user.is_authenticated and book.id in owned_ids %}
+                <span class="text-success fw-semibold">Owned</span>
+             {% else %}
+                <form method="post" action="{% url 'bookMng:cart_add' book.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="btn btn-sm btn-success">Add to Cart</button>
+                </form>
+                {% endif %}
+         </td>
+      </tr>
+   {% endfor %}
+   </table>
+
+   <!-- ✅ Button to view cart -->
+   <div style="margin-top: 15px;">
+      <a href="{% url 'bookMng:cart_detail' %}" class="btn btn-primary">View Cart</a>
+   </div>
+{% endblock content %}

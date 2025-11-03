@@ -16,9 +16,9 @@
 
           <!-- Book Cover -->
           {% if bk.picture %}
-            <img src="{{ bk.picture.url }}" class="rounded border" style="width:90px;height:130px;object-fit:cover;">
+            <img src="{{ bk.picture.url }}" style="width:90px;height:130px;object-fit:cover;">
             {% else %}
-            <img src="{% static 'img/placeholder_book.png' %}" class="rounded border" style="width:90px;height:130px;object-fit:cover;">
+            <img src="{% static 'img/placeholder_book.png' %}" style="width:90px;height:130px;object-fit:cover;">
             {% endif %}
 
 

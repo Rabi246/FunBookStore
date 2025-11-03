@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block sidenav %}
+   {% for item in item_list %}
+      <li><a href="{{ item.link }}">{{ item.item }}</a></li>
+   {% endfor %}
+{% endblock sidenav %}
+
+{% block content %}
+  <h1>My Purchased Books</h1>
+
+  {% if books %}
+  <table border="2">
+    <tr>
+      <th>Book Name</th>
+      <th>Price</th>
+    </tr>
+    {% for book in books %}
+    <tr>
+      <td>
+        <!-- If namespaced: bookMng:book_detail ; otherwise: book_detail -->
+        <a href="{% url 'bookMng:book_detail' book.id %}">{{ book.name }}</a>
+      </td>
+      <td>{{ book.price }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+    <p>You haven't purchased any books yet.</p>
+    <a class="btn btn-primary" href="{% url 'bookMng:displaybooks' %}">Browse Books</a>
+  {% endif %}
+{% endblock %}
