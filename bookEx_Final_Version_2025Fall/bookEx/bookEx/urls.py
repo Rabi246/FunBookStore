@@ -37,7 +37,7 @@ urlpatterns = [
     path('register/', Register.as_view(), name='register'),
     path('', include('django.contrib.auth.urls')),
     path("", include(("bookMng.urls", "bookMng"), namespace="bookMng")),
-    path("aboutus/", views.about, name="about"),
+
 
 
 ]

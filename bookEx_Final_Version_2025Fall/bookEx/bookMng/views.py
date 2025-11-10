@@ -36,6 +36,8 @@ def index(request):
 
 
 def postbook(request):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect("/login")
     submitted = False
     if request.method == 'POST':
         form = BookForm(request.POST, request.FILES)
@@ -62,6 +64,8 @@ def postbook(request):
 
 
 def displaybooks(request):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect("/login")
     books = Book.objects.all().order_by('-publishdate')
 
     owned_book_ids = PurchasedBook.objects.filter(user=request.user)\
@@ -149,7 +153,7 @@ from django.http import JsonResponse
 def book_info(request, book_id):
     book = Book.objects.get(id=book_id)
 
-    # ✅ Check if user owns the book (purchased)
+    # Check if user owns the book (purchased)
     user_owns_book = PurchasedBook.objects.filter(
         user=request.user,
         book=book
@@ -164,7 +168,7 @@ def book_info(request, book_id):
         "username": str(book.username),
         "picture": book.picture.url if book.picture else "/static/img/placeholder_book.png",
 
-        # ✅ Only allow delete if the user purchased it
+        # Only allow delete if the user purchased it
         "can_delete": request.user.is_authenticated and user_owns_book
     })
 
@@ -172,23 +176,27 @@ def book_info(request, book_id):
 @require_POST
 @login_required
 def remove_ownership(request, book_id):
-    # ✅ Remove the book only from user's library (PurchasedBook table)
+    # Remove the book only from user's library (PurchasedBook table)
     PurchasedBook.objects.filter(user=request.user, book_id=book_id).delete()
 
     return JsonResponse({"success": True})
 
 def about(request):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect("/login")
     return render(request, "bookMng/aboutus.html", {
         "item_list": MainMenu.objects.all()
     })
 def home_redirect(request):
     if request.user.is_authenticated:
-        return redirect('mybooks')  # or whatever your home page is
+        return redirect('mybooks')
     return redirect('login')
 
 from django.db.models import Q
 
 def search_books(request):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect("/login")
     query = request.GET.get("q", "")
     results = []
 
