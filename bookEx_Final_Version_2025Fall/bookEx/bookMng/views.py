@@ -1,29 +1,15 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.views.decorators.http import require_POST
-
-from .models import MainMenu
-from .forms import BookForm, RegisterForm
-from django.http import HttpResponseRedirect
-
-from .models import Book
-
 from django.views.generic.edit import CreateView
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
-from .models import PurchasedBook,Book
-from .models import Book, Comment, MainMenu
-from django.shortcuts import render, get_object_or_404, redirect
-from .forms import CommentForm
-from .models import Book, Rating
 from django.contrib import messages
-from django.http import JsonResponse
+from django.db.models import Q
 
-
-
-
-
+from .models import MainMenu, Book, PurchasedBook, Comment, Rating
+from .forms import BookForm, RegisterForm, CommentForm
 
 # Create your views here.
 
@@ -34,7 +20,6 @@ def index(request):
                       'item_list': MainMenu.objects.all()
                   })
 
-
 def postbook(request):
     if not request.user.is_authenticated:
         return HttpResponseRedirect("/login")
@@ -42,7 +27,6 @@ def postbook(request):
     if request.method == 'POST':
         form = BookForm(request.POST, request.FILES)
         if form.is_valid():
-            #form.save()
             book = form.save(commit=False)
             try:
                 book.username = request.user
@@ -62,7 +46,6 @@ def postbook(request):
                       'submitted': submitted
                   })
 
-
 def displaybooks(request):
     if not request.user.is_authenticated:
         return HttpResponseRedirect("/login")
@@ -76,16 +59,11 @@ def displaybooks(request):
         "owned_book_ids": owned_book_ids,
     })
 
-
 def book_detail(request, book_id):
-    # get the book object
     book = get_object_or_404(Book, id=book_id)
     book.pic_path = book.picture.url[14:] if book.picture else ''
-
-    # get all comments for this book
     comments = book.comments.all().order_by('-created_at')
 
-    # handle comment submission
     if request.method == 'POST':
         form = CommentForm(request.POST)
         if form.is_valid():
@@ -97,18 +75,12 @@ def book_detail(request, book_id):
     else:
         form = CommentForm()
 
-    # ✅ render always happens here — outside the if/else
     return render(request, 'bookMng/book_detail.html', {
         'item_list': MainMenu.objects.all(),
         'book': book,
         'comments': comments,
         'form': form,
     })
-
-
-
-
-
 
 class Register(CreateView):
     template_name = 'registration/register.html'
@@ -118,7 +90,6 @@ class Register(CreateView):
     def form_valid(self, form):
         form.save()
         return HttpResponseRedirect(self.success_url)
-
 
 def mybooks(request):
     if not request.user.is_authenticated:
@@ -138,7 +109,6 @@ def mybooks(request):
                       'books': books
                   })
 
-
 def book_delete(request, book_id):
     book = Book.objects.get(id=book_id)
     book.delete()
@@ -148,16 +118,21 @@ def book_delete(request, book_id):
                   {
                       'item_list': MainMenu.objects.all(),
                   })
-from django.http import JsonResponse
 
 def book_info(request, book_id):
     book = Book.objects.get(id=book_id)
-
-    # Check if user owns the book (purchased)
     user_owns_book = PurchasedBook.objects.filter(
         user=request.user,
         book=book
     ).exists()
+
+    # Get the user's rating for this book, if any
+    user_rating = None
+    if request.user.is_authenticated:
+        try:
+            user_rating = Rating.objects.get(user=request.user, book=book).value
+        except Rating.DoesNotExist:
+            user_rating = None
 
     return JsonResponse({
         "id": book.id,
@@ -167,18 +142,14 @@ def book_info(request, book_id):
         "summary": book.summary,
         "username": str(book.username),
         "picture": book.picture.url if book.picture else "/static/img/placeholder_book.png",
-
-        # Only allow delete if the user purchased it
-        "can_delete": request.user.is_authenticated and user_owns_book
+        "can_delete": request.user.is_authenticated and user_owns_book,
+        "user_rating": user_rating    # <-- this is key!
     })
-
 
 @require_POST
 @login_required
 def remove_ownership(request, book_id):
-    # Remove the book only from user's library (PurchasedBook table)
     PurchasedBook.objects.filter(user=request.user, book_id=book_id).delete()
-
     return JsonResponse({"success": True})
 
 def about(request):
@@ -187,12 +158,11 @@ def about(request):
     return render(request, "bookMng/aboutus.html", {
         "item_list": MainMenu.objects.all()
     })
+
 def home_redirect(request):
     if request.user.is_authenticated:
         return redirect('mybooks')
     return redirect('login')
-
-from django.db.models import Q
 
 def search_books(request):
     if not request.user.is_authenticated:
@@ -212,11 +182,12 @@ def search_books(request):
         "item_list": MainMenu.objects.all()
     })
 
+@require_POST
+@login_required
 def rate_book(request, book_id):
     """Create or update the user's rating for a specific book."""
     book = get_object_or_404(Book, id=book_id)
 
-    # Validate rating value
     try:
         value = int(request.POST.get('value', ''))
         if value < 1 or value > 5:
@@ -227,29 +198,23 @@ def rate_book(request, book_id):
         messages.error(request, 'Please choose a rating from 1 to 5.')
         return redirect(request.META.get('HTTP_REFERER', '/'))
 
-    # Create or update rating
     Rating.objects.update_or_create(
         book=book,
         user=request.user,
         defaults={'value': value}
     )
 
-    # Respond simply
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return JsonResponse({'ok': True, 'value': value})
 
     messages.success(request, f'Your rating ({value}★) has been saved!')
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
-
 def delete_comment(request, comment_id):
     comment = get_object_or_404(Comment, id=comment_id)
-
-    # only allow user who wrote the comment to delete it
     if request.user != comment.user:
         messages.error(request, "You can only delete your own comments.")
         return redirect(request.META.get("HTTP_REFERER", "/"))
-
     comment.delete()
     messages.success(request, "Comment deleted successfully.")
     return redirect(request.META.get("HTTP_REFERER", "/"))

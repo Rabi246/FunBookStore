@@ -7,83 +7,105 @@
 
 {% block content %}
 <div class="mylibrary-page">
-<div id="library-container">
+  <div id="library-container">
 
     <div id="library-left">
-        <h2>My Library</h2>
-        <div class="book-grid">
-            {% for bk in books %}
-            <div class="book-card" onclick="showDetails({{ bk.id }})">
-                {% if bk.picture %}
-                    <img src="{{ bk.picture.url }}" class="book-cover">
-                {% else %}
-                    <img src="{% static 'img/placeholder_book.png' %}" class="book-cover">
-                {% endif %}
-            </div>
-
-            {% endfor %}
+      <h2>My Library</h2>
+      <div class="book-grid">
+        {% for bk in books %}
+        <div class="book-card" onclick="showDetails({{ bk.id }})">
+          {% if bk.picture %}
+            <img src="{{ bk.picture.url }}" class="book-cover">
+          {% else %}
+            <img src="{% static 'img/placeholder_book.png' %}" class="book-cover">
+          {% endif %}
         </div>
+        {% endfor %}
+      </div>
     </div>
 
     <div id="details-panel" class="hidden">
-        <button onclick="hideDetails()" class="close-btn">✖</button>
-        <div id="details-content">Select a book...</div>
+      <button onclick="hideDetails()" class="close-btn">✖</button>
+      <div id="details-content">Select a book...</div>
     </div>
 
+  </div>
 </div>
-</div>
+
+<!-- Hidden CSRF token so JS can read it -->
+<form id="csrf-form" style="display:none;">
+  {% csrf_token %}
+</form>
 
 <script>
+function getCSRFToken() {
+  const el = document.querySelector('[name=csrfmiddlewaretoken]');
+  return el ? el.value : '';
+}
+
 function showDetails(id) {
-    fetch(`/book-info/${id}/`)
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById("details-panel").classList.remove("hidden");
+  fetch(`/book-info/${id}/`)
+    .then(res => res.json())
+    .then(data => {
+      console.log("BOOK INFO JSON:", data);  // 👈 check this in DevTools
 
-            document.getElementById("details-content").innerHTML = `
-                <img src="${data.picture}" style="width:250px;height:350px;object-fit:cover;border-radius:8px;"><br><br>
-                <h2>${data.name}</h2>
-                <p><strong>Author:</strong> ${data.author}</p>
-                <p><strong>Summary:</strong> ${data.summary}</p>
-                <p><strong>Price:</strong> $${data.price}</p>
-                <div class="rating" data-book="${data.id}">
-                    <div style="margin-top:8px;margin-bottom:4px;">
-                        <strong>Your rating:</strong>
-                        <span class="stars" aria-label="Rate this book">
-                            ${[1,2,3,4,5].map(i => `
-                                <button type="button" class="star" data-value="${i}">★</button>
-                            `).join('')}
-                        </span>
-                    </div>
-                </div>
+      document.getElementById("details-panel").classList.remove("hidden");
 
-                ${data.can_delete ? `
-                    <button onclick="removeOwnership(${data.id})" class="btn btn-danger mt-3">Remove From My Library</button>
-                ` : ""}
-            `;
-        });
+      document.getElementById("details-content").innerHTML = `
+        <img src="${data.picture}" style="width:250px;height:350px;object-fit:cover;border-radius:8px;"><br><br>
+        <h2>${data.name}</h2>
+        <p><strong>Author:</strong> ${data.author}</p>
+        <p><strong>Summary:</strong> ${data.summary}</p>
+        <p><strong>Price:</strong> $${data.price}</p>
+
+        <div class="rating" data-book="${data.id}">
+          <div style="margin-top:8px;margin-bottom:4px;">
+            <strong>Your rating:</strong>
+            <span class="stars" aria-label="Rate this book">
+              ${
+                [1,2,3,4,5].map(i => `
+                  <button
+                    type="button"
+                    class="star"
+                    data-value="${i}"
+                    ${data.user_rating != null && i <= Number(data.user_rating) ? 'data-selected="1"' : ''}
+                  >★</button>
+                `).join('')
+              }
+            </span>
+          </div>
+        </div>
+
+        ${data.can_delete ? `
+          <button onclick="removeOwnership(${data.id})" class="btn btn-danger mt-3">
+            Remove From My Library
+          </button>
+        ` : ""}
+      `;
+
+      // Attach click handlers to the stars we just rendered
+      wireRatingHandlers();
+    });
+}
+
+function hideDetails() {
+  document.getElementById("details-panel").classList.add("hidden");
 }
 
 function removeOwnership(id) {
-    if (!confirm("Remove this book from your library?")) return;
+  if (!confirm("Remove this book from your library?")) return;
 
-    fetch(`/remove-book/${id}/`, {
-        method: "POST",
-        headers: {
-            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
-        }
-    })
-    .then(res => res.json())
-    .then(() => {
-        alert("✅ Book removed from your library.");
-        location.reload();
-    });
-}
-</script>
-<script>
-function getCSRFToken() {
-  const el = document.querySelector('#csrf-form [name=csrfmiddlewaretoken]');
-  return el ? el.value : '';
+  fetch(`/remove-book/${id}/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCSRFToken()
+    }
+  })
+  .then(res => res.json())
+  .then(() => {
+    alert("✅ Book removed from your library.");
+    location.reload();
+  });
 }
 
 function wireRatingHandlers() {
@@ -102,16 +124,29 @@ function wireRatingHandlers() {
         },
         body: `value=${encodeURIComponent(value)}`
       })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Request failed: ' + res.status);
+        }
+        return res.json();
+      })
       .then(data => {
-        if (!data.ok) { alert(data.error || 'Something went wrong'); return; }
+        if (!data.ok) {
+          alert(data.error || 'Something went wrong');
+          return;
+        }
         // Highlight selected stars
         wrap.querySelectorAll('.star').forEach(s => {
-          if (Number(s.dataset.value) <= Number(value)) s.setAttribute('data-selected', '1');
-          else s.removeAttribute('data-selected');
+          if (Number(s.dataset.value) <= Number(value)) {
+            s.setAttribute('data-selected', '1');
+          } else {
+            s.removeAttribute('data-selected');
+          }
         });
       })
-      .catch(() => alert('Network error'));
+      .catch(err => {
+        alert(err.message || 'Network error');
+      });
     });
   });
 }
@@ -126,10 +161,12 @@ function wireRatingHandlers() {
   opacity: 0.5;
   line-height: 1;
 }
-.rating .star[data-selected="1"] { opacity: 1; }
-.rating .star:hover { opacity: 0.85; }
+.rating .star[data-selected="1"] {
+  opacity: 1;
+}
+.rating .star:hover {
+  opacity: 0.85;
+}
 </style>
-
-
 
 {% endblock %}
