@@ -82,7 +82,9 @@ function showDetails(id) {
 <!--            AI Character Relationships-->
 <!--            </a>-->
 
-
+        <a href="/book_detail/${data.id}" class="btn btn-outline-primary mt-3 w-100">
+          View Details & Comments
+        </a>
         ${data.can_delete ? `
           <button onclick="removeOwnership(${data.id})" class="btn btn-danger mt-3">
             Remove From My Library
