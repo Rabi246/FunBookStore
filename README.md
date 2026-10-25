@@ -4,8 +4,6 @@
 
 Built as a team project for a Software Engineering course at Cal State LA, Fall 2025.
 
-<!-- Add screenshots here -->
-
 ---
 
 ## Features
@@ -14,13 +12,13 @@ Built as a team project for a Software Engineering course at Cal State LA, Fall 
 - **Browse & search**: view all books or search by title or author
 - **Post a book**: list a book with title, author, price, summary, and an uploaded cover image
 - **Book details**: full summary, cover, average rating, and a comment section
-     <img width="835" height="464" alt="Screenshot 2026-10-24 184120" src="https://github.com/user-attachments/assets/5729f9d0-7f91-4a06-a1c1-693d79ba8d19" />
+     <img width="835" height="464" alt="Book detail page with cover and comments" src="https://github.com/user-attachments/assets/5729f9d0-7f91-4a06-a1c1-693d79ba8d19" />
 
 - **Shopping cart & checkout**: session-based cart with running totals; checking out adds books to your purchases
 - **My Books**: manage the books you've posted or purchased, including removing ownership
 - **Ratings**: rate books from 1 to 5 stars (one rating per user, updated in place)
 - **Comments**: discuss books, with the ability to delete your own comments
-     <img width="924" height="447" alt="Screenshot 2026-10-24 190227" src="https://github.com/user-attachments/assets/afe7a369-ec95-42b6-90f7-58af342e1503" />
+     <img width="924" height="447" alt="Comments section on a book page" src="https://github.com/user-attachments/assets/afe7a369-ec95-42b6-90f7-58af342e1503" />
 
 - **About Us** page introducing the team
 
@@ -60,11 +58,12 @@ bookEx_Final_Version_2025Fall/bookEx/
    git clone https://github.com/Rabi246/FunBookStore.git
    cd FunBookStore/bookEx_Final_Version_2025Fall/bookEx
    ```
-2. Create a virtual environment and install Django
+2. Create a virtual environment and install dependencies
    ```bash
    python -m venv .venv
    .venv\Scripts\activate        # Windows
    source .venv/bin/activate     # macOS/Linux
+   pip install -r requirements.txt
    ```
 3. Set up the database and run the server
    ```bash
