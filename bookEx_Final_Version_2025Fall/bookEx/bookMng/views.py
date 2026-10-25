@@ -10,7 +10,6 @@ from django.db.models import Q
 
 from .models import MainMenu, Book, PurchasedBook, Comment, Rating
 from .forms import BookForm, RegisterForm, CommentForm
-import requests
 from django.conf import settings
 
 
