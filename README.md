@@ -14,10 +14,14 @@ Built as a team project for a Software Engineering course at Cal State LA, Fall 
 - **Browse & search**: view all books or search by title or author
 - **Post a book**: list a book with title, author, price, summary, and an uploaded cover image
 - **Book details**: full summary, cover, average rating, and a comment section
+     <img width="835" height="464" alt="Screenshot 2026-10-24 184120" src="https://github.com/user-attachments/assets/5729f9d0-7f91-4a06-a1c1-693d79ba8d19" />
+
 - **Shopping cart & checkout**: session-based cart with running totals; checking out adds books to your purchases
 - **My Books**: manage the books you've posted or purchased, including removing ownership
 - **Ratings**: rate books from 1 to 5 stars (one rating per user, updated in place)
 - **Comments**: discuss books, with the ability to delete your own comments
+     <img width="924" height="447" alt="Screenshot 2026-10-24 190227" src="https://github.com/user-attachments/assets/afe7a369-ec95-42b6-90f7-58af342e1503" />
+
 - **About Us** page introducing the team
 
 ## Tech Stack
@@ -61,7 +65,6 @@ bookEx_Final_Version_2025Fall/bookEx/
    python -m venv .venv
    .venv\Scripts\activate        # Windows
    source .venv/bin/activate     # macOS/Linux
-   pip install django
    ```
 3. Set up the database and run the server
    ```bash
@@ -82,6 +85,12 @@ I'm [Samantha Vazquez](https://github.com/Rabi246). I set up and managed the rep
 - **Comment deletion**: letting users delete their own comments
 - **About Us page** and site-wide layout updates
 - **Book catalog**: added the starting book collection with cover images
+
+After the class ended, I cleaned up and improved the project:
+
+- Removed 6,000+ committed virtual environment and IDE files, and added a `.gitignore` and `requirements.txt`
+- Fixed a startup crash caused by an unused dependency import
+- Made the comments page reachable from the My Books panel
 
 ## Team
 
